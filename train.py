@@ -41,7 +41,7 @@ def greedy_decode(model, source, source_mask, tokenizer_src, tokenizer_tgt, max_
 
         _, next_word =torch.max(prob, dim = 1)
 
-        decoder_input = torch.cat([decoder_input, torch.empty(1,1).fill_(next_word.item).to(device)], dim= 1)
+        decoder_input = torch.cat([decoder_input, torch.empty(1,1).type_as(source).fill_(next_word.item()).to(device)], dim= 1)
 
         if next_word == eos_idx:
             break
@@ -49,7 +49,7 @@ def greedy_decode(model, source, source_mask, tokenizer_src, tokenizer_tgt, max_
         return decoder_input.squeeze(0)
 
 
-def run_validation(model, validation_ds, tokenizer_src, tokenizer_tgt, max_len, device, print_msg):
+def run_validation(model, validation_ds, tokenizer_src, tokenizer_tgt, max_len, device, print_msg, global_state, writer, num_examples =2):
     count=0
     model.eval()
     console_width = 80
@@ -59,7 +59,7 @@ def run_validation(model, validation_ds, tokenizer_src, tokenizer_tgt, max_len, 
             encoder_input =batch['encoder_input'].to(device)
             encoder_mask =batch['encoder_mask'].to(device)
 
-            assert(encoder_input.size(0) == 1) , "Validation Batch size should be one only"
+            assert encoder_input.size(0) == 1 , "Validation Batch size should be one only"
 
             model_output = greedy_decode(model, encoder_input, encoder_mask, tokenizer_src, tokenizer_tgt, max_len, device)
 
