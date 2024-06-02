@@ -46,10 +46,10 @@ def greedy_decode(model, source, source_mask, tokenizer_src, tokenizer_tgt, max_
         if next_word == eos_idx:
             break
 
-        return decoder_input.squeeze(0)
+    return decoder_input.squeeze(0)
 
 
-def run_validation(model, validation_ds, tokenizer_src, tokenizer_tgt, max_len, device, print_msg, global_state, writer, num_examples =2):
+def run_validation(model, validation_ds, tokenizer_src, tokenizer_tgt, max_len, device, print_msg, global_state, writer, num_examples =5):
     count=0
     model.eval()
     console_width = 80
@@ -70,6 +70,10 @@ def run_validation(model, validation_ds, tokenizer_src, tokenizer_tgt, max_len, 
             print_msg(f"SOURCE TEXT: {source_text}")
             print_msg(f"TARGET TEXT: {target_text}")
             print_msg(f"PREDICTED TEXT: {model_out_text}")
+
+            if count == num_examples:
+                print_msg('-'*console_width)
+                break
 
 
 
