@@ -65,10 +65,7 @@ def run_validation(model, validation_ds, tokenizer_src, tokenizer_tgt, max_len, 
 
             source_text = batch['src_text'][0]
             target_text = batch['tgt_text'][0]
-            if model_output is not None:
-                model_out_text = tokenizer_tgt.decode(model_output.detach().cpu().numpy())
-            else:
-                model_out_text = "No model output available"
+            model_out_text = tokenizer_tgt.decode(model_output.detach().cpu().numpy())
             print_msg("-"*console_width)
             print_msg(f"SOURCE TEXT: {source_text}")
             print_msg(f"TARGET TEXT: {target_text}")
@@ -86,7 +83,8 @@ def get_all_sentences(ds, lang):  #(ds, 'en')
 def get_or_build_tokenizer(config, ds, lang): # raw dataset and src or tgt language
     tokenizer_path = Path(config['tokenizer_file'].format(lang)) #tokenizer_en.json for english or tokenizer_it.json for italian
     if not Path.exists(tokenizer_path): #IFtokenizer filefor that language doesn't exist
-
+        
+        print(f"Creating a new tokenizer file for: {lang}")
         tokenizer = Tokenizer(WordLevel(unk_token="[UNK]")) # UNKtokenfor unknown words
         tokenizer.pre_tokenizer = Whitespace() #use whitespace for splitting text into tokens
         trainer = WordLevelTrainer(special_tokens=["[UNK]", "[PAD]", "[SOS]", "[EOS]"], min_frequency=2)
@@ -209,8 +207,9 @@ def train_model(config):
 
         # Run validation at the end of every epoch
         run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, lambda msg: batch_iterator.write(msg), global_step, writer)
-
+        
         # Save the model at the end of every epoch
+        print(f"Saving Model at Epoch: {epoch} & Global Step: {global_step} ")
         model_filename = get_weights_file_path(config, f"{epoch:02d}")
         torch.save({
             'epoch': epoch,
