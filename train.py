@@ -30,10 +30,10 @@ def greedy_decode(model, source, source_mask, tokenizer_src, tokenizer_tgt, max_
 
     decoder_input = torch.empty(1, 1).fill_(sos_idx).type_as(source).to(device)
     while True:
-        if (decoder_input.size(1) == max_len):
+        if decoder_input.size(1) == max_len:
             break
 
-        decoder_mask = causal_mask(decoder_input.size(1)).type_as(source).to(device)
+        decoder_mask = causal_mask(decoder_input.size(1)).type_as(source_mask).to(device)
 
         out =model.decode(encoder_output, source_mask, decoder_input, decoder_mask)
 
@@ -65,7 +65,10 @@ def run_validation(model, validation_ds, tokenizer_src, tokenizer_tgt, max_len, 
 
             source_text = batch['src_text'][0]
             target_text = batch['tgt_text'][0]
-            model_out_text = tokenizer_tgt.decode(model_output.detach().cpu().numpy())
+            if model_output is not None:
+                model_out_text = tokenizer_tgt.decode(model_output.detach().cpu().numpy())
+            else:
+                model_out_text = "No model output available"
             print_msg("-"*console_width)
             print_msg(f"SOURCE TEXT: {source_text}")
             print_msg(f"TARGET TEXT: {target_text}")
